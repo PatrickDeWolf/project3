@@ -2,6 +2,17 @@
 session_start(); 
 $lang="NL";
 
+$tel="";
+$fb="";
+$insta="";
+$introTi="";  //lege intro titel wordt ingevuld indien p meegegeven
+$introTe="";  //lege introwordt ingevuld indien p meegegeven
+$naam="";
+$directory="";
+$lat="";
+$lon="";
+$loc="";
+	
 if(isset($lang) && $lang=="NL"){
 	$sluitknop="sluit";
 	$verzendknop="verzend";
@@ -13,8 +24,6 @@ elseif(isset($lang) && $lang=="FR"){
 	$sluitknop="close";
 	$verzendknop="send";
 }
-
-
 
 
 
@@ -43,16 +52,7 @@ if(isset( $_GET['id']) && !empty($_GET['id'])){
 			$strNr= $row["straat"]." ".$row["nr"];
 			$directory= './'.$id; 
 	}
-}else{
-	//echo "GEEN id meegegeven in de URL";
-	$tel="";
-	$fb="";
-	$insta="";
-	$introTi="";  //lege intro titel wordt ingevuld indien p meegegeven
-	$introTe="";  //lege introwordt ingevuld indien p meegegeven
-
 }
-
 
 
 
@@ -71,7 +71,13 @@ if(isset( $_GET['id']) && !empty($_GET['id'])){
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link href="CSS/stijl.css" rel="stylesheet" type="text/css">  <!--Verwijzing naar CSS/stijl.css-->
-</head>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  </head>
+
+
 
 
 
@@ -118,8 +124,9 @@ if(isset( $_GET['id']) && !empty($_GET['id'])){
 
 <?php
 function carousel($directory,$screenheight=80, $autorun=1, $bullets=1, $leftRight=1){
-	
-		if($autorun==0){$auto="data-interval='false'";}else{$auto="";}
+
+	if($autorun==0){$auto="data-interval='false'";}else{$auto="";}
+	if (is_dir($directory)) {
 		$files = scandir($directory);
 		$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
 		$imageFiles = [];//dit is een array of een lijst. In één variabele kan je meerdere variabelen opslaan. Momenteel is deze nog leeg
@@ -132,7 +139,7 @@ function carousel($directory,$screenheight=80, $autorun=1, $bullets=1, $leftRigh
 		echo"<div id='myCarousel' class='carousel slide' data-ride='carousel' ".$auto.">";
 		   
 			///bolletjes
-			if((count($imageFiles) >1) && ($bullets==1)){
+		if((count($imageFiles) >1) && count($imageFiles) <11 &&($bullets==1)){
 				echo" <ol class='carousel-indicators'>";
 				for($x=0; $x<count($imageFiles); $x++){
 					if($x==0){$ac="active";}else{$ac="";}
@@ -154,25 +161,18 @@ function carousel($directory,$screenheight=80, $autorun=1, $bullets=1, $leftRigh
 			//// links rechts
 			if((count($imageFiles) >1) && ($leftRight==1)){
 				echo"<a class='left carousel-control' href='#myCarousel' data-slide='prev'>";
-				echo"<span class='glyphicon glyphicon-chevron-left'></span>";
 				echo"<span class='sr-only'>Previous</span>";
 				echo"</a>";
 				
 				echo"<a class='right carousel-control' href='#myCarousel' data-slide='next'>";
-				echo"<span class='glyphicon glyphicon-chevron-right'></span>";
 				echo"<span class='sr-only'>Next</span>";
 				echo"</a>";
 			}
 		echo"</div>";
 	}
-	
-	
-	
-	
-	
-	
-	carousel($directory,100,1,1);
-	?>
+}
+carousel($directory,100,1,1);
+?>
 	
 	<!--
 <div id="myCarousel" class="carousel slide" data-ride="carousel">
@@ -241,47 +241,50 @@ if( isset($_SESSION['ingelogd'])  && isset($id) && !empty($id)){  include_once('
 
 
 <!-- Container (Contact Section) -->
-<div id="contact" class="container">
-  <h3 class="text-center">CONTACT</h3>
-  <p class="text-center"><em>Programmeren voor iedereen!</em></p>
+<?php
+echo"<div id='contact' class='container'>";
+	echo"<h3 class='text-center'>CONTACT</h3>";
 
-  <div class="row">
-    <div class="col-md-4">
-      <p><b>Fan? Drop een berichtje.</b></p>
-      <br><br>
-      <p><span class="glyphicon glyphicon-map-marker"></span>Sint-Jans-Molenbeek, BE</p>
-      <p><span class="glyphicon glyphicon-phone"></span>Tel: +32 444 555 666</p>
-      <p><span class="glyphicon glyphicon-envelope"></span>E-mail: mail@gmail.be</p>
-    </div>
-    <div class="col-md-8">
-      <div class="row">
-        <div class="col-sm-6 form-group">
-          <input class="form-control" id="name" name="name" placeholder="Naan" type="text" required>
-        </div>
-        <div class="col-sm-6 form-group">
-          <input class="form-control" id="email" name="email" placeholder="E-mail" type="email" required>
-        </div>
-      </div>
-      <textarea class="form-control" id="comments" name="comments" placeholder="Bericht" rows="5"></textarea>
-      <br>
-      <div class="row">
-        <div class="col-md-12 form-group">
-          <button class="btn pull-right" type="submit"><?php echo $verzendknop;?></button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <br>
-</div>
+	echo"<div class='row'>";
+		echo"<div class='col-md-4'>";
+		echo"</div> ";
+
+		echo"<div class='col-md-4'>";
+			//echo"<br><br>";
+			echo"<center>";
+			echo"<table border='0'>";
+			
+				if($loc != "")
+				{
+				echo"<tr>";
+					echo"<td><span class='glyphicon glyphicon-map-marker' 	STYLE='margin-right:5px;'></span></td>";
+					echo"<td>".$loc."</td>";
+				echo"</tr>";
+				}
+
+				echo"<tr>";
+					echo"<td><span class='glyphicon glyphicon-phone' 	STYLE='margin-right:5px;'></span></td>";
+					echo"<td>Tel: +32 444 555 666</td>";
+				echo"</tr>";
+				echo"<tr>";
+					echo"<td><span class='glyphicon glyphicon-envelope' 	STYLE='margin-right:5px;'></span></td>";
+					echo"<td>test@test.be</td>";
+				echo"</tr>	";
+			echo"</table>";
+			echo"</center>";
+		echo"</div>";
+
+		echo"<div class='col-md-4'>";
+		echo"</div>";
+	echo"</div>";
+	
+	
+	echo"<br>";
+echo"</div>";
+?>
 
 
-
-
-
-<img src="afbeeldingen/map.jpg" class="img-responsive" style="width:100%">
-
-
-
+    
 
 
 
