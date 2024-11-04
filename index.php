@@ -17,20 +17,21 @@ elseif(isset($lang) && $lang=="FR"){
 
 
 
-$introTi="";  //lege intro titel wordt ingevuld indien p meegegeven
-$introTe="";  //lege introwordt ingevuld indien p meegegeven
 
 
 
 
 
-if(isset( $_GET['p']) && !empty($_GET['p'])){
+
+if(isset( $_GET['id']) && !empty($_GET['id'])){
+	//id uit de url is de id van de databank
 	include_once('db.php');
-	$p = $con->real_escape_string($_GET['p']);
-	$sql = "SELECT  *	FROM  projecten 	WHERE naam = '$p'  "; 
+	$id = $con->real_escape_string($_GET['id']);
+	$sql = "SELECT  *	FROM  projecten 	WHERE id = '$id'  "; 
 	$result = $con->query($sql);
 	if ($result->num_rows > 0) {
 		$row = $result->fetch_assoc();
+			$naam = $row["naam"];
 			$introTi = $row["titel"];
 			$introTe = $row["intro"];
 			$email = $row["email"];
@@ -40,29 +41,27 @@ if(isset( $_GET['p']) && !empty($_GET['p'])){
 			
 			$loc=$row["pc"]." ".$row["gemeente"];
 			$strNr= $row["straat"]." ".$row["nr"];
-			//var_dump($row);
+			$directory= './'.$id; 
 	}
 }else{
-	echo "GEEN p meegegeven in de URL";
+	//echo "GEEN id meegegeven in de URL";
+	$tel="";
+	$fb="";
+	$insta="";
+	$introTi="";  //lege intro titel wordt ingevuld indien p meegegeven
+	$introTe="";  //lege introwordt ingevuld indien p meegegeven
+
 }
 
 
 
 
-
-
-if( isset($_SESSION['ingelogd']) && isset($_SESSION['user']) )
-{   // INDIEN INGELOGD TOON naam gevolgd door uitloggen.
-	$project=$_SESSION['sites'][0]['naam'];
-	$projectId=$_SESSION['sites'][0]['id'];
-}
-  
   
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $lang;?>">
 <head>
-	<title><?php echo $project;?></title> <!--titel boven in de browserbalk-->
+	<title><?php echo $naam;?></title> <!--titel boven in de browserbalk-->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
@@ -88,7 +87,7 @@ if( isset($_SESSION['ingelogd']) && isset($_SESSION['user']) )
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>                        
       </button>
-      <a class="navbar-brand" href="#myPage"><?php echo $project;?></a>
+      <a class="navbar-brand" href="#myPage"><?php echo $naam;?></a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav navbar-right">
@@ -99,7 +98,6 @@ if( isset($_SESSION['ingelogd']) && isset($_SESSION['user']) )
 		
 		if( isset($_SESSION['ingelogd']) )
 		{   // INDIEN INGELOGD TOON naam gevolgd door uitloggen.
-			// de link is ook gewijzigd naar logout
 			echo"<li><a href='logout.php'><i class='fa fa-sign-out'></i></a></li>";
 		}else{
 			// INDIEN NIET INGELOGD TOON inloggen en link naar inloggen.php
@@ -112,26 +110,77 @@ if( isset($_SESSION['ingelogd']) && isset($_SESSION['user']) )
   </div>
 </nav>
 
-<br><br>
+
 
 <?php 
-var_dump($_SESSION);
+// var_dump($_SESSION);
 ?>
 
+<?php
+function carousel($directory,$screenheight=80, $autorun=1, $bullets=1, $leftRight=1){
+	
+		if($autorun==0){$auto="data-interval='false'";}else{$auto="";}
+		$files = scandir($directory);
+		$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+		$imageFiles = [];//dit is een array of een lijst. In één variabele kan je meerdere variabelen opslaan. Momenteel is deze nog leeg
+		foreach ($files as $file) {
+			$fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+			if (in_array(strtolower($fileExtension), $allowedExtensions)) {
+				$imageFiles[] = $file;
+			}
+		}
+		echo"<div id='myCarousel' class='carousel slide' data-ride='carousel' ".$auto.">";
+		   
+			///bolletjes
+			if((count($imageFiles) >1) && ($bullets==1)){
+				echo" <ol class='carousel-indicators'>";
+				for($x=0; $x<count($imageFiles); $x++){
+					if($x==0){$ac="active";}else{$ac="";}
+					echo"<li data-target='#myCarousel' data-slide-to='".$x."' class='".$ac."'></li>";
+				}
+				echo"</ol>";
+			}
 
+			///afbeeldingen
+			echo"<div class='carousel-inner'>";
+			for($x=0; $x<count($imageFiles); $x++){
+				if($x==0){$ac="active";}else{$ac="";}
+				echo"<div class='item ".$ac."' STYLE=\"height:".$screenheight."vh; background-image:url('".$directory."/".$imageFiles[$x]."'); 
+				background-size:cover; background-position: center center;\">";
+				echo"</div>";
+			}
+			echo"</div>";
+
+			//// links rechts
+			if((count($imageFiles) >1) && ($leftRight==1)){
+				echo"<a class='left carousel-control' href='#myCarousel' data-slide='prev'>";
+				echo"<span class='glyphicon glyphicon-chevron-left'></span>";
+				echo"<span class='sr-only'>Previous</span>";
+				echo"</a>";
+				
+				echo"<a class='right carousel-control' href='#myCarousel' data-slide='next'>";
+				echo"<span class='glyphicon glyphicon-chevron-right'></span>";
+				echo"<span class='sr-only'>Next</span>";
+				echo"</a>";
+			}
+		echo"</div>";
+	}
+	
+	
+	
+	
+	
+	
+	carousel($directory,100,1,1);
+	?>
+	
+	<!--
 <div id="myCarousel" class="carousel slide" data-ride="carousel">
-    <!-- Indicators  (bolletjes)-->
     <ol class="carousel-indicators">
       <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
       <li data-target="#myCarousel" data-slide-to="1"></li>
       <li data-target="#myCarousel" data-slide-to="2"></li>
     </ol>
-
-
-
-
-
-    <!-- Wrapper for slides (afbeeldingen met inline css en tekst)-->
     <div class="carousel-inner" role="listbox">
       <div class="item active"
        STYLE="
@@ -172,10 +221,10 @@ var_dump($_SESSION);
     </a>
 	</div>
 </div>
-
+-->
 
 <?php 
-if( isset($_SESSION['ingelogd']) && isset($_SESSION['user']) && isset($p) && !empty($p)){ include_once('./modals/modalIntro.php');} 
+if( isset($_SESSION['ingelogd'])  && isset($id) && !empty($id)){  include_once('./modals/modalIntro.php');} 
 ?>
 
 

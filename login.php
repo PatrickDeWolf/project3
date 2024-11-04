@@ -6,8 +6,6 @@ if(isset($_SESSION['ingelogd'])){echo "<center><br><br><br><br><br>U bent al ing
 if(isset($_POST['code'])  && isset($_POST['ww'])   ){   // PAS AAN
 	
 	include_once('db.php');   //INDIEN POST BESTAANT, CONNECTIE MET DB
-
-
 	$email = $con->real_escape_string($_POST['code']);
 	$ww = $con->real_escape_string($_POST['ww']);    /// VOEG TOE
 	
@@ -16,7 +14,6 @@ if(isset($_POST['code'])  && isset($_POST['ww'])   ){   // PAS AAN
 	// echo"<br>";
 	// echo $ww;
 	// echo"<br><br>";
-
 
 	$sql = "SELECT email, password 	, naam, id	
 			FROM projecten 
@@ -32,16 +29,17 @@ if(isset($_POST['code'])  && isset($_POST['ww'])   ){   // PAS AAN
 		
 		while($row = $result->fetch_assoc()) {
 			//$naam[]=$row["naam"];
-			//$id[]= $row["id"];
+			$id[]= $row["id"];
 			$persoonsData[] = array("id"=>  $row["id"], "naam"=> 	$row["naam"] );
 		}
+		
 		
         $_SESSION['ingelogd']="ja";
 	    $_SESSION['user']=$email;
 		$_SESSION['sites']=$persoonsData;
 		$_SESSION['aantalSites']=count($persoonsData);
         
-        $backTo="index.php";
+        $backTo="index.php?id=".$id[0];
         header('Location: '.$backTo);
 
     }else{
